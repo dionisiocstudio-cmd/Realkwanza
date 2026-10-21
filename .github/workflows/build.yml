@@ -1,0 +1,45 @@
+
+name: Build RealKwanza APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'RealKwanza-Android-Project.zip'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter o projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.9'
+
+      - name: Extrair projeto Android
+        run: unzip -o RealKwanza-Android-Project.zip -d .
+
+      - name: Compilar APK
+        run: gradle -p RealKwanza assembleDebug
+
+      - name: Guardar APK para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: RealKwanza-APK
+          path: RealKwanza/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
